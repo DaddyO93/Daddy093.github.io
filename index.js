@@ -127,25 +127,55 @@ let player = new Player(x, y, 10, 'white');
 // array to contain all projectiles
 let projectiles = []
 
-// array to contain all enemies
+// array to contain all enemies and variables for spawn rate and speed
 let enemies = []
+let spawnRate = 1000
+let enemySpeed = 1
 
 // array to contain all particles
 let particles = []
 
+// extra lives and target score to gain extra life
+let extraLives = 0
+let targetScore = 10000
+staticTargetScore = 6000
+
 // initialized settings
 function init() {
+
+    // start background sound
+    let backgroundSound = new Audio('assets/backgroundSound.mp3');
+    if (typeof backgroundSound.loop == 'boolean') {
+        backgroundSound.loop = true;
+    } else {
+        backgroundSound.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+    }
+    backgroundSound.play();
+
     // instantiate player
     player = new Player(x, y, 10, 'white');
 
     // array to contain all projectiles
     projectiles = []
 
-    // array to contain all enemies
+    // array to contain all enemies and variables for spawn rate and speed
     enemies = []
+    enemySpeed = 1
+    spawnRate = 1000
 
     // array to contain all particles
     particles = []
+
+    // reset extra lives and target score to gain extra life
+    extraLives = 0
+    extraLivesElement.innerHTML = 0
+    targetScore = 6000
+
+    // new target score goal additon for extra life
+    staticTargetScore = 5000
 
     // reset score
     score = 0
@@ -188,13 +218,13 @@ function spawnEnemies() {
 
             // creates velocity
             const velocity = {
-                x: Math.cos(angle),
-                y: Math.sin(angle)
+                x: Math.cos(angle) * enemySpeed,
+                y: Math.sin(angle) * enemySpeed
             }
 
             enemies.push(new Enemy(x, y, radius, color, velocity))
         },
-        900)
+        spawnRate)
 }
 
 // this id is used to determine which frame we are in to end game
@@ -205,6 +235,11 @@ let score = 0
 
 // animation loop
 function animate() {
+
+    // increase spawn rate and speed
+    spawnRate += 20
+    enemySpeed += .0005
+
     animationId = requestAnimationFrame(animate)
 
     // clear canvas as objects move & make a little transparent for trailing effect
@@ -246,14 +281,48 @@ function animate() {
     enemies.forEach((enemy, index) => {
         enemy.update()
 
+        // extra lives if score over 10,000
+        if (score >= targetScore) {
+
+            // play sound when gain extra life
+            let extraLifeSound = new Audio('assets/extraLifeSound');
+            extraLifeSound.volume = .6;
+            extraLifeSound.play();
+
+            extraLives++;
+            targetScore += staticTargetScore
+            extraLivesElement.innerHTML = extraLives
+            console.log(extraLives)
+        }
+
         // collision detection for enemies and player and end game
         const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y)
         if (dist - enemy.radius - player.radius < 1) {
-            cancelAnimationFrame(animationId)
 
-            // display start game modal when game ends
-            modalElement.style.display = 'flex'
-            bigSoreElement.innerHTML = score
+            // check for extra lives
+            if (extraLives <= 0) {
+
+
+                // play sound when end game
+                let endGameSound = new Audio('assets/endGameSound');
+                endGameSound.volume = .6;
+                endGameSound.play();
+
+                // end game if no extra lives
+                cancelAnimationFrame(animationId)
+
+                // display start game modal when game ends
+                modalElement.style.display = 'flex'
+                bigSoreElement.innerHTML = score
+
+            } else {
+                extraLives -= 1
+
+                // destroy enemy that touches player
+                enemy.radius - 60
+                enemies.splice(index, 1)
+                extraLivesElement.innerHTML = extraLives
+            }
         }
 
         // "HYPOT" = hypotenuse in this case refers to distance between two points
@@ -264,8 +333,14 @@ function animate() {
             // and enemies when projectile touches enemy
             if (dist - enemy.radius - projectile.radius < 1) {
 
+                // play sound when enemy is hit
+                let explosionSound = new Audio('assets/explosion');
+                explosionSound.volume = .6;
+                explosionSound.play();
+
                 // creates explosions here
                 for (let i = 0; i < enemy.radius * 2; i++) {
+
                     particles.push(new Particle(
                         projectile.x,
                         projectile.y,
@@ -320,11 +395,15 @@ addEventListener('click', (event) => {
         event.clientY - canvas.height / 2,
         event.clientX - canvas.width / 2)
 
+    // play sound when mouse is clicked
+    let fireSound = new Audio('assets/fire2');
+    fireSound.volume = .8;
+    fireSound.play();
 
     // creates velocity
     const velocity = {
-        x: Math.cos(angle) * 5,
-        y: Math.sin(angle) * 5
+        x: Math.cos(angle) * 6,
+        y: Math.sin(angle) * 6
     }
 
     // adds new projectile to projectiles array
@@ -339,16 +418,18 @@ addEventListener('click', (event) => {
 
 // start game on clicking "start game" button
 startGameButton.addEventListener('click', () => {
+    // clear background
+    c.clearRect(-60, -60, canvas.width + 60, canvas.height + 60)
 
     // initializes game to start position
     init()
+
+    // remove start game modal when game starts
+    modalElement.style.display = 'none'
 
     // starts animation loop
     animate()
 
     // spawns enemies
     spawnEnemies()
-
-    // remove start game modal when game starts
-    modalElement.style.display = 'none'
 })
