@@ -418,8 +418,6 @@ addEventListener('click', (event) => {
 
 // start game on clicking "start game" button
 startGameButton.addEventListener('click', () => {
-    // clear background
-    c.clearRect(-60, -60, canvas.width + 60, canvas.height + 60)
 
     // initializes game to start position
     init()
