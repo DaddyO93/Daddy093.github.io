@@ -29,73 +29,37 @@ class Player {
     }
 }
 
-// need to create parent/child for projectiles and enemies since share same attributes
-
-// Projectile factory
-class Projectile {
+// Projectile class - child of Player class
+class Projectile extends Player {
     constructor(x, y, radius, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.color = color;
-        this.velocity = velocity;
-    }
-
-    // draws projectile on screen
-    draw() {
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        c.fillStyle = this.color;
-        c.fill();
+        super(x, y, radius, color)
+        this.velocity = velocity
     }
 
     // update position of projectile
     update() {
-        this.draw()
+        super.draw()
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
     }
 }
 
-// Enemy factory
-class Enemy {
+// Enemy factory - child of Projectile class
+class Enemy extends Projectile {
     constructor(x, y, radius, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.color = color;
-        this.velocity = velocity;
-    }
-
-    // draws projectile on screen
-    draw() {
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        c.fillStyle = this.color;
-        c.fill();
-    }
-
-    // update position of projectile
-    update() {
-        this.draw()
-        this.x = this.x + this.velocity.x
-        this.y = this.y + this.velocity.y
+        super(x, y, radius, color, velocity)
     }
 }
 
-// Particle factory
+// Particle factory - child of Projectile class
 const friction = 0.98
-class Particle {
+class Particle extends Projectile {
     constructor(x, y, radius, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.color = color;
-        this.velocity = velocity;
+        super(x, y, radius, color, velocity)
         this.alpha = 1;
     }
 
-    // draws projectile on screen
+    // draws particle on screen
     draw() {
         c.save();
         c.globalAlpha = this.alpha;
@@ -106,7 +70,7 @@ class Particle {
         c.restore();
     }
 
-    // update position of projectile
+    // update position of particle
     update() {
         this.draw()
         this.velocity.x *= friction
@@ -175,7 +139,7 @@ function init() {
     targetScore = 6000
 
     // new target score goal additon for extra life
-    staticTargetScore = 5000
+    staticTargetScore = 4000
 
     // reset score
     score = 0
@@ -269,8 +233,7 @@ function animate() {
             projectile.y - projectile.radius > canvas.height
         ) {
 
-            // removes flashing when projectile is removed by waiting until next frame to
-            // remove projectile from array
+            // removes flashing when projectile is removed by waiting until next frame to remove projectile from array
             setTimeout(() => {
                 projectiles.splice(index, 1)
             }, 0)
@@ -318,6 +281,11 @@ function animate() {
             } else {
                 extraLives -= 1
 
+                // play sound when life is lost
+                let loseLifeSound = new Audio('assets/loseLifeSound');
+                loseLifeSound.volume = .3;
+                loseLifeSound.play()
+
                 // destroy enemy that touches player
                 enemy.radius - 60
                 enemies.splice(index, 1)
@@ -329,8 +297,7 @@ function animate() {
         projectiles.forEach((projectile, projectileIndex) => {
             const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y)
 
-            // collision detection loop and removal from array and screen for projectiles
-            // and enemies when projectile touches enemy
+            // collision detection loop and removal from array and screen for projectiles and enemies when projectile touches enemy
             if (dist - enemy.radius - projectile.radius < 1) {
 
                 // play sound when enemy is hit
@@ -358,14 +325,12 @@ function animate() {
                     score += 100
                     scoreElement.innerHTML = score
 
-                    // using gsap (GreenSock Animation Platform - a library) to transition 
-                    // in size smoothly
+                    // using gsap (GreenSock Animation Platform - a library) to transition in size smoothly
                     gsap.to(enemy, {
                         radius: enemy.radius - 10
                     })
 
-                    // "setTimeout" removes flashing when projectile is removed by waiting 
-                    // until next frame to removes projectile from array
+                    // "setTimeout" removes flashing when projectile is removed by waiting until next frame to removes projectile from array
                     setTimeout(() => {
                         projectiles.splice(projectileIndex, 1)
                     }, 0)
@@ -375,8 +340,7 @@ function animate() {
                     score += 250
                     scoreElement.innerHTML = score
 
-                    // removes flashing when enemy is removed by waiting until next frame 
-                    // and removes enemy and projectile from arrays
+                    // removes flashing when enemy is removed by waiting until next frame and removes enemy and projectile from arrays
                     setTimeout(() => {
                         enemies.splice(index, 1)
                         projectiles.splice(projectileIndex, 1)
