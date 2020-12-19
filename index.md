@@ -1,5 +1,6 @@
 ## astroids-ish
-#A game built in JavaScript reminiscent of Asteroids
+
+A game built in JavaScript reminiscent of Asteroids
 
 If you are old like me, you remember the old Atari - the good 'ol days... Hours spent zooming around the screen, blasting bolders. 
 
