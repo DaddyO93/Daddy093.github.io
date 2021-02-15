@@ -6,6 +6,4 @@ If you are old like me, you remember the old Atari - the good 'ol days... Hours 
 
 In this version you don't move, but the baddies do! And yes, they really are coming straight at you. How long can you last?
 
-Play the game: https://daddyo93.github.io/Daddy093.github.io/
-
 This game was started using the tutorial from https://www.youtube.com/watch?v=eI9idPTT0c4, but continues to evolve as I tweak it.
